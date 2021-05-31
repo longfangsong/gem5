@@ -201,6 +201,7 @@ class ExecContext : public ::ExecContext
     {
         const RegId& reg = si->destRegIdx(idx);
         assert(reg.isIntReg());
+        printf("minor::thread.setIntReg: %d, %lu\n", reg.index(), val);
         thread.setIntReg(reg.index(), val);
     }
 

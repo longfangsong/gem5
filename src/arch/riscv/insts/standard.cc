@@ -54,6 +54,14 @@ RegOp::generateDisassembly(Addr pc, const Loader::SymbolTable *symtab) const
 }
 
 std::string
+MatRegOp::generateDisassembly(Addr pc, const Loader::SymbolTable *symtab) const
+{
+    std::stringstream ss;
+    ss << mnemonic << ' ' << this->machInst;
+    return ss.str();
+}
+
+std::string
 CSROp::generateDisassembly(Addr pc, const Loader::SymbolTable *symtab) const
 {
     std::stringstream ss;

@@ -359,6 +359,7 @@ class CheckerCPU : public BaseCPU, public ExecContext
     {
         const RegId& reg = si->destRegIdx(idx);
         assert(reg.isIntReg());
+        printf("checker::thread.setIntReg: %d, %lu\n", reg.index(), val);
         thread->setIntReg(reg.index(), val);
         setScalarResult(val);
     }

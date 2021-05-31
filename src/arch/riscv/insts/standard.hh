@@ -54,6 +54,22 @@ class RegOp : public RiscvStaticInst
 };
 
 /**
+ * Base class for operations that works on matrix registers
+ */
+class MatRegOp : public RiscvStaticInst
+{
+  protected:
+    unsigned size() const { return (machInst >> 12) & 0x7; }
+    unsigned rd()   const { return (machInst >> 7) & 0x7; }
+    unsigned rs1()  const { return (machInst >> 15) & 0x7; }
+    unsigned rs2()  const { return (machInst >> 20) & 0x7; }
+    using RiscvStaticInst::RiscvStaticInst;
+
+    std::string generateDisassembly(
+        Addr pc, const Loader::SymbolTable *symtab) const override;
+};
+
+/**
  * Base class for operations with immediates (I is the type of immediate)
  */
 template<typename I>

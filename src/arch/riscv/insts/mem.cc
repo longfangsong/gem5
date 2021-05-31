@@ -57,5 +57,4 @@ Store::generateDisassembly(Addr pc, const Loader::SymbolTable *symtab) const
         offset << '(' << registerName(srcRegIdx(0)) << ')';
     return ss.str();
 }
-
 }

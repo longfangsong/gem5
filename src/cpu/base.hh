@@ -43,6 +43,7 @@
 #define __CPU_BASE_HH__
 
 #include <vector>
+#include <cstdint>
 
 // Before we do anything else, check if this build is the NULL ISA,
 // and if so stop here
@@ -101,8 +102,71 @@ class CPUProgressEvent : public Event
     virtual const char *description() const;
 };
 
+class MatrixUnit {
+  private:
+    int32_t registers[8][7*7];
+  public:
+    MatrixUnit() {
+      for (size_t i = 0; i < 8; ++i) {
+        for (size_t j = 0; j < 7*7; ++j) {
+          registers[i][j] = i+1;
+        }
+      }
+    }
+
+    void matload(uint32_t size, uint32_t rd, int32_t n) {
+      printf("matload %u, mat%u, %d\n", size, rd, n);
+      for (size_t row_id = 0; row_id < size; ++row_id) {
+        for (size_t col_id = 0; col_id < size; ++col_id) {
+          registers[rd][row_id * 7 + col_id] = n;
+        }
+      }
+    }
+
+    void multiply(uint32_t size, uint32_t rd, uint32_t rs1, uint32_t rs2) {
+      printf("matmul %u, mat%u, mat%u, mat%u\n", size, rd, rs1, rs2);
+      for (size_t row_id = 0; row_id < size; ++row_id) {
+        for (size_t col_id = 0; col_id < size; ++col_id) {
+          registers[rd][row_id * 7 + col_id] = registers[rs1][row_id * 7 + col_id] * registers[rs2][row_id * 7 + col_id];
+        }
+      }
+    }
+
+    int32_t matmax(uint32_t size, uint32_t rs1) {
+      printf("matmax %u, mat%u\n", size, rs1);
+      int32_t result = INT32_MIN;
+      for (size_t row_id = 0; row_id < size; ++row_id) {
+        for (size_t col_id = 0; col_id < size; ++col_id) {
+          int32_t n = registers[rs1][row_id * 7 + col_id];
+          if(result < n)
+            result = n;
+        }
+      }
+      return result;
+    }
+
+    int32_t matsum(uint32_t size, uint32_t rs1) {
+      printf("matsum %u, mat%u", size, rs1);
+      int32_t result = 0;
+      for (size_t row_id = 0; row_id < size; ++row_id) {
+        for (size_t col_id = 0; col_id < size; ++col_id) {
+          result += registers[rs1][row_id * 7 + col_id];
+        }
+      }
+      printf("\tsum=%d\n", result);
+      return result;
+    }
+
+    int32_t matavg(uint32_t size, uint32_t rs1) {
+      printf("matavg %u, mat%u\n", size, rs1);
+      return matsum(size, rs1) / (size * size);
+    }
+};
+
 class BaseCPU : public ClockedObject
 {
+  public:
+    MatrixUnit matrixUnit;
   protected:
 
     /// Instruction count used for SPARC misc register

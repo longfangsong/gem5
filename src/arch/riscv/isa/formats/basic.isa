@@ -89,3 +89,11 @@ def format BasicOp(code, *flags) {{
     decode_block = BasicDecode.subst(iop)
     exec_output = BasicExecute.subst(iop)
 }};
+
+def format MatRegOp(code, *flags) {{
+    iop = InstObjParams(name, Name, 'MatRegOp', code, flags)
+    header_output = BasicDeclare.subst(iop)
+    decoder_output = BasicConstructor.subst(iop)
+    decode_block = BasicDecode.subst(iop)
+    exec_output = BasicExecute.subst(iop)
+}};

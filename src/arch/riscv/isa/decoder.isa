@@ -524,6 +524,31 @@ decode QUADRANT default Unknown::unknown() {
             }
         }
 
+        format MatRegOp {
+            0x02: MatLoad({{
+            }});
+            0x0a: MatDMUL({{
+                xc->tcBase()->getCpuPtr()->matrixUnit.multiply(this->size(), this->rd(), this->rs1(), this->rs2());
+            }});
+            0x1a: decode FUNCT7 {
+                0x1: MatMax({{
+                    unsigned rd_index = (machInst >> 7) & 0x1F;
+                    int32_t result = xc->tcBase()->getCpuPtr()->matrixUnit.matmax(this->size(), this->rs1());
+                    xc->tcBase()->setIntReg(rd_index, result);
+                }});
+                0x2: MatAvg({{
+                    unsigned rd_index = (machInst >> 7) & 0x1F;
+                    int32_t result = xc->tcBase()->getCpuPtr()->matrixUnit.matavg(this->size(), this->rs1());
+                    xc->tcBase()->setIntReg(rd_index, result);
+                }});
+                0x3: MatSum({{
+                    unsigned rd_index = (machInst >> 7) & 0x1F;
+                    int32_t result = xc->tcBase()->getCpuPtr()->matrixUnit.matsum(this->size(), this->rs1());
+                    xc->tcBase()->setIntReg(rd_index, result);
+                }});
+            }
+        }
+
         0x0b: decode FUNCT3 {
             0x2: decode AMOFUNCT {
                 0x2: LoadReserved::lr_w({{

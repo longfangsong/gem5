@@ -250,3 +250,86 @@ def format Store(memacc_code, ea_code={{EA = Rs1 + offset;}},
         LoadStoreBase(name, Name, offset_code, ea_code, memacc_code, mem_flags,
         inst_flags, 'Store', exec_template_base='Store')
 }};
+
+def template MatLoadExecute {{
+    Fault
+    %(class_name)s::execute(
+        ExecContext *xc, Trace::InstRecord *traceData) const
+    {
+        Addr EA;
+        Fault fault = NoFault;
+
+        %(op_decl)s;
+        %(op_rd)s;
+        %(ea_code)s;
+        uint32_t rd = (machInst >> 7) & 0x7;
+        int32_t* buffer = xc->tcBase()->getCpuPtr()->matrixUnit.buffer(rd);
+        uint32_t width = (machInst >> 12) & 0x7; 
+
+        if (fault == NoFault) {
+            fault = readMatAtomic(xc, traceData, EA, buffer, width, memAccessFlags);
+            %(memacc_code)s;
+        }
+
+        if (fault == NoFault) {
+            %(op_wb)s;
+        }
+
+        return fault;
+    }
+}};
+
+def template MatLoadInitiateAcc {{
+    Fault
+    %(class_name)s::initiateAcc(ExecContext *xc,
+        Trace::InstRecord *traceData) const
+    {
+        Addr EA;
+        Fault fault = NoFault;
+
+        %(op_src_decl)s;
+        %(op_rd)s;
+        %(ea_code)s;
+        uint32_t width = (machInst >> 12) & 0x7; 
+        if (fault == NoFault) {
+            fault = initiateMemReadWithSize(xc, traceData, EA, width * width * sizeof(int32_t), memAccessFlags);
+        }
+
+        return fault;
+    }
+}};
+
+def template MatLoadCompleteAcc {{
+    Fault
+    %(class_name)s::completeAcc(PacketPtr pkt, ExecContext *xc,
+        Trace::InstRecord *traceData) const
+    {
+        Fault fault = NoFault;
+
+        %(op_decl)s;
+        %(op_rd)s;
+
+        uint32_t rd = (machInst >> 7) & 0x7;
+        int32_t* buffer = xc->tcBase()->getCpuPtr()->matrixUnit.buffer(rd);
+        uint32_t width = (machInst >> 12) & 0x7; 
+        getMat(pkt, buffer, width);
+
+        if (fault == NoFault) {
+            %(memacc_code)s;
+        }
+
+        if (fault == NoFault) {
+            %(op_wb)s;
+        }
+
+        return fault;
+    }
+}};
+
+def format MatLoad(memacc_code, ea_code = {{EA = Rs1 + offset;}},
+        offset_code={{offset = sext<12>(IMM12);}},
+        mem_flags=[], inst_flags=[]) {{
+    (header_output, decoder_output, decode_block, exec_output) = \
+        LoadStoreBase(name, Name, offset_code, ea_code, memacc_code, mem_flags,
+        inst_flags, 'Load', exec_template_base='MatLoad')
+}};

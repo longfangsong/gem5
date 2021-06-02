@@ -523,10 +523,10 @@ decode QUADRANT default Unknown::unknown() {
                 }}, inst_flags=FloatMemWriteOp);
             }
         }
-
+        0x02: MatLoad::LoadMat({{
+            Mem;// todo
+        }});
         format MatRegOp {
-            0x02: MatLoad({{
-            }});
             0x0a: MatDMUL({{
                 xc->tcBase()->getCpuPtr()->matrixUnit.multiply(this->size(), this->rd(), this->rs1(), this->rs2());
             }});

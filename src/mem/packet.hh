@@ -261,6 +261,10 @@ class Packet : public Printable
     typedef uint32_t FlagsType;
     typedef ::Flags<FlagsType> Flags;
 
+    PacketDataPtr getData() const {
+        return data;
+    }
+    
   private:
 
     enum : FlagsType {

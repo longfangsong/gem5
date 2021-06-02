@@ -69,6 +69,15 @@ initiateMemRead(XC *xc, Trace::InstRecord *traceData, Addr addr,
                            flags, byte_enable);
 }
 
+template <class XC>
+Fault
+initiateMemReadWithSize(XC *xc, Trace::InstRecord *traceData, Addr addr,
+                size_t size, Request::Flags flags)
+{
+    const std::vector<bool> byte_enable(size, true);
+    return initiateMemRead(xc, addr, size, flags, byte_enable);
+}
+
 /// Extract the data returned from a timing mode read.
 template <ByteOrder Order, class MemT>
 void
@@ -77,6 +86,11 @@ getMem(PacketPtr pkt, MemT &mem, Trace::InstRecord *traceData)
     mem = pkt->get<MemT>(Order);
     if (traceData)
         traceData->setData(mem);
+}
+
+void getMat(PacketPtr pkt, int32_t* buffer, size_t width) {
+    uint8_t* d = pkt->getData();
+    memcpy(buffer, d, width*width);
 }
 
 template <class MemT>
@@ -121,6 +135,23 @@ readMemAtomic(XC *xc, Trace::InstRecord *traceData, Addr addr, MemT &mem,
     return fault;
 }
 
+template <class XC>
+Fault
+readMatAtomic(XC *xc, Trace::InstRecord *traceData, Addr addr, int32_t* buffer, size_t width,
+                Request::Flags flags)
+{
+    int32_t* internal_buffer = new int32_t[width*width];
+    const std::vector<bool> byte_enable(width*width*sizeof(int32_t), true);
+    Fault fault = readMemAtomic(xc, addr, (uint8_t*)internal_buffer,
+                                width*width*sizeof(int32_t), flags, byte_enable);
+    for (size_t row_id = 0; row_id < width; ++row_id) {
+        for (size_t col_id = 0; col_id < width; ++col_id) {
+            buffer[row_id * 7 + col_id] = internal_buffer[row_id * width + col_id];
+        }
+    }
+    return fault;
+}
+
 template <class XC, class MemT>
 Fault
 readMemAtomicLE(XC *xc, Trace::InstRecord *traceData, Addr addr, MemT &mem,
@@ -129,6 +160,7 @@ readMemAtomicLE(XC *xc, Trace::InstRecord *traceData, Addr addr, MemT &mem,
     return readMemAtomic<ByteOrder::little>(
             xc, traceData, addr, mem, flags);
 }
+
 
 template <class XC, class MemT>
 Fault

@@ -106,6 +106,10 @@ class MatrixUnit {
   private:
     int32_t registers[8][7*7];
   public:
+    int32_t* buffer(size_t n) {
+      return registers[n];
+    }
+
     MatrixUnit() {
       for (size_t i = 0; i < 8; ++i) {
         for (size_t j = 0; j < 7*7; ++j) {
@@ -124,7 +128,7 @@ class MatrixUnit {
     }
 
     void multiply(uint32_t size, uint32_t rd, uint32_t rs1, uint32_t rs2) {
-      printf("matmul %u, mat%u, mat%u, mat%u\n", size, rd, rs1, rs2);
+      printf("matdmul %u, mat%u, mat%u, mat%u\n", size, rd, rs1, rs2);
       for (size_t row_id = 0; row_id < size; ++row_id) {
         for (size_t col_id = 0; col_id < size; ++col_id) {
           registers[rd][row_id * 7 + col_id] = registers[rs1][row_id * 7 + col_id] * registers[rs2][row_id * 7 + col_id];
